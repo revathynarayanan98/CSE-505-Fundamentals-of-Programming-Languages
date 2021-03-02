@@ -126,6 +126,8 @@ class Stmts {
 
 	public Stmts() {
 		s = new Stmt();
+		if (Lexer.nextToken == Token.KEY_END)
+			return;
 		if (Lexer.nextToken == Token.ID || Lexer.nextToken == Token.LEFT_BRACE || Lexer.nextToken == Token.KEY_IF
 				|| Lexer.nextToken == Token.KEY_WHILE) {
 			ss = new Stmts();
@@ -160,9 +162,8 @@ class Stmt {
 			cm = new Cmpd();
 			break;
 		}
-		default: {
+		default:
 			break;
-		}
 		}
 	}
 
@@ -182,10 +183,25 @@ class Assign extends Stmt {
 		super(0); // superclass initialization
 		// Fill in code here.
 
-		// To-Do
+		i = SymTab.index(Lexer.ident);
+		if (i == -1)
+			System.err.println("Identifier not in the table!");
+		
+		Lexer.lex();
+		Lexer.lex();
+		
+		e = new Expr();
+		if (i < 4) {
+			ByteCode.gen("istore", i);
+		} else {
+			ByteCode.gen("istore", i);
+			ByteCode.skip(1);
+		}
+		
+		Lexer.lex();
 
 		// End with this statement:
-		ByteCode.gen("istore", SymTab.index(id));
+		// ByteCode.gen("istore", SymTab.index(id));
 	}
 }
 
@@ -214,11 +230,32 @@ class Cond extends Stmt {
 	Relexp r;
 	Stmt s1;
 	Stmt s2;
+	
+	int n2, n3;
 
 	public Cond() {
 		super(0);
 		// Fill in code here. Refer to
 		// code in class Loop for guidance
+		
+		Lexer.lex();
+		Lexer.lex();
+		r = new Relexp();
+		ByteCode.skip(2);
+		n3 = Relexp.n1;
+		Lexer.lex();
+		s1 = new Stmt();
+		if(Lexer.nextToken == Token.KEY_ELSE){
+			Lexer.lex();
+			n2 = ByteCode.str_codeptr;
+			ByteCode.gen_goto(n2);
+			ByteCode.skip(2);
+			ByteCode.patch(n3, ByteCode.str_codeptr);
+			s2 = new Stmt();
+			ByteCode.patch(n2, ByteCode.str_codeptr);
+		}
+		else
+			ByteCode.patch(n3, ByteCode.str_codeptr);
 	}
 }
 
@@ -259,6 +296,8 @@ class Relexp {
 	Expr e1;
 	Expr e2;
 	String op = "";
+	
+	public static int n1;
 
 	public Relexp() {
 		// Fill in code here
