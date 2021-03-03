@@ -50,6 +50,7 @@ class Pars {
 
 	String types = ""; // comma-separated sequence of types, e.g., int,int
 	int npars = 0; // the number of parameters
+	String id = "";
 
 	public Pars() {
 		// Fill in code here
@@ -58,11 +59,13 @@ class Pars {
 		// SymTab.add(id)
 
 		while (Lexer.nextToken != Token.RIGHT_PAREN) {
+			this.id = Lexer.ident;
+			SymTab.add(this.id);
 			if (Lexer.nextToken == Token.KEY_INT) {
 				if (types.isEmpty())
-					this.types = Lexer.ident;
+					this.types = this.id;
 				else
-					this.types += "," + Lexer.ident;
+					this.types += "," + this.id;
 				this.npars++;
 			}
 
@@ -147,19 +150,19 @@ class Stmt {
 		// Fill in code here
 		switch (Lexer.nextToken) {
 		case Token.ID: {
-			a = new Assign();
+			this.a = new Assign();
 			break;
 		}
 		case Token.KEY_IF: {
-			c = new Cond();
+			this.c = new Cond();
 			break;
 		}
 		case Token.KEY_WHILE: {
-			l = new Loop();
+			this.l = new Loop();
 			break;
 		}
 		case Token.LEFT_BRACE: {
-			cm = new Cmpd();
+			this.cm = new Cmpd();
 			break;
 		}
 		default:
@@ -177,31 +180,21 @@ class Stmt {
 class Assign extends Stmt {
 	String id;
 	Expr e;
-	int i;
 
 	public Assign() {
 		super(0); // superclass initialization
 		// Fill in code here.
 
-		i = SymTab.index(Lexer.ident);
-		if (i == -1)
-			System.err.println("Identifier not in the table!");
-		
+		id = Lexer.ident;
+
 		Lexer.lex();
 		Lexer.lex();
-		
+
 		e = new Expr();
-		if (i < 4) {
-			ByteCode.gen("istore", i);
-		} else {
-			ByteCode.gen("istore", i);
-			ByteCode.skip(1);
-		}
-		
 		Lexer.lex();
 
 		// End with this statement:
-		// ByteCode.gen("istore", SymTab.index(id));
+		ByteCode.gen("istore", SymTab.index(id));
 	}
 }
 
@@ -230,32 +223,35 @@ class Cond extends Stmt {
 	Relexp r;
 	Stmt s1;
 	Stmt s2;
-	
+
 	int n2, n3;
 
 	public Cond() {
 		super(0);
 		// Fill in code here. Refer to
 		// code in class Loop for guidance
-		
-		Lexer.lex();
-		Lexer.lex();
-		r = new Relexp();
-		ByteCode.skip(2);
-		n3 = Relexp.n1;
-		Lexer.lex();
-		s1 = new Stmt();
-		if(Lexer.nextToken == Token.KEY_ELSE){
+
+		if (Lexer.nextToken == Token.KEY_IF) {
 			Lexer.lex();
-			n2 = ByteCode.str_codeptr;
-			ByteCode.gen_goto(n2);
-			ByteCode.skip(2);
-			ByteCode.patch(n3, ByteCode.str_codeptr);
-			s2 = new Stmt();
-			ByteCode.patch(n2, ByteCode.str_codeptr);
+			if (Lexer.nextToken == Token.LEFT_PAREN) {
+				Lexer.lex();
+				this.r = new Relexp();
+				ByteCode.skip(2);
+				n3 = Relexp.n1;
+				Lexer.lex();
+				s1 = new Stmt();
+				if (Lexer.nextToken == Token.KEY_ELSE) {
+					Lexer.lex();
+					n2 = ByteCode.str_codeptr;
+					ByteCode.gen_goto(n2);
+					ByteCode.skip(2);
+					ByteCode.patch(n3, ByteCode.str_codeptr);
+					s2 = new Stmt();
+					ByteCode.patch(n2, ByteCode.str_codeptr);
+				} else
+					ByteCode.patch(n3, ByteCode.str_codeptr);
+			}
 		}
-		else
-			ByteCode.patch(n3, ByteCode.str_codeptr);
 	}
 }
 
@@ -266,6 +262,9 @@ class Cmpd extends Stmt {
 	public Cmpd() {
 		super(0);
 		// Fill in code here
+		Lexer.lex();
+		s = new Stmts();
+		Lexer.lex(); // scan over the right brace
 	}
 }
 
@@ -296,11 +295,57 @@ class Relexp {
 	Expr e1;
 	Expr e2;
 	String op = "";
-	
+
 	public static int n1;
 
 	public Relexp() {
 		// Fill in code here
+
+		e1 = new Expr();
+		switch (Lexer.nextToken) {
+		case Token.LESSER_OP: {
+			Lexer.lex();
+			e2 = new Expr();
+			n1 = ByteCode.str_codeptr;
+			ByteCode.gen_if("if_icmpge");
+			break;
+		}
+		case Token.GREATER_OP: {
+			Lexer.lex();
+			e2 = new Expr();
+			n1 = ByteCode.str_codeptr;
+			ByteCode.gen_if("if_icmple");
+			break;
+		}
+		case Token.LESSEQ_OP: {
+			Lexer.lex();
+			e2 = new Expr();
+			n1 = ByteCode.str_codeptr;
+			ByteCode.gen_if("if_icmpgt");
+			break;
+		}
+		case Token.GREATEREQ_OP: {
+			Lexer.lex();
+			e2 = new Expr();
+			n1 = ByteCode.str_codeptr;
+			ByteCode.gen_if("if_icmplt");
+			break;
+		}
+		case Token.NOT_EQ: {
+			Lexer.lex();
+			e2 = new Expr();
+			n1 = ByteCode.str_codeptr;
+			ByteCode.gen_if("if_icmpeq");
+			break;
+		}
+		case Token.EQ_OP: {
+			Lexer.lex();
+			e2 = new Expr();
+			n1 = ByteCode.str_codeptr;
+			ByteCode.gen_if("if_icmpne ");
+			break;
+		}
+		}
 	}
 }
 
@@ -312,6 +357,14 @@ class Expr {
 
 	public Expr() {
 		// Fill in code here
+
+		t = new Term();
+		if (Lexer.nextToken == Token.ADD_OP || Lexer.nextToken == Token.SUB_OP) {
+			op = Lexer.nextChar;
+			Lexer.lex(); // scan over op
+			e = new Expr();
+			ByteCode.gen(op); // generate the byte-code for op
+		}
 	}
 }
 
@@ -323,6 +376,14 @@ class Term {
 
 	public Term() {
 		// Fill in code here
+
+		f = new Factor();
+		if (Lexer.nextToken == Token.MULT_OP || Lexer.nextToken == Token.DIV_OP) {
+			op = Lexer.nextChar;
+			Lexer.lex(); // scan over op
+			t = new Term();
+			ByteCode.gen(op);
+		}
 	}
 }
 
@@ -335,6 +396,35 @@ class Factor {
 
 	public Factor() {
 		// Fill in code here
+		switch (Lexer.nextToken) {
+		case Token.INT_LIT: // number
+			this.i = Lexer.intValue;
+			Lexer.lex(); // scan over int
+
+			if (this.i < 6 && this.i > -1)
+				ByteCode.gen("iconst", i);
+			else if (this.i < 128) {
+				ByteCode.gen("bipush", i);
+				ByteCode.skip(1);
+			} else {
+				ByteCode.gen("sipush ", i);
+				ByteCode.skip(2);
+			}
+			break;
+		case Token.LEFT_PAREN:
+			Lexer.lex(); // scan over '('
+			this.e = new Expr();
+			Lexer.lex(); // scan over ')'
+			break;
+		case Token.ID:
+			
+			this.i = SymTab.index(Lexer.ident);
+			ByteCode.gen("iload", this.i);
+			Lexer.lex();
+			break;
+		default:
+			break;
+		}
 	}
 }
 

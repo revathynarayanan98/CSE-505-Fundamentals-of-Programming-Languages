@@ -1,6 +1,6 @@
 // Sample Tiny_PL function definitions
 
- // must give max2 before max4
+// must give max2 before max4
 
  int max2(int x, int y) {
     if (x > y)
