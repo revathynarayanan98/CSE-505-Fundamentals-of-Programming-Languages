@@ -3,7 +3,7 @@
 // There are three classes here:  FunTab, SymTab, ByteCode
 
 class FunTab {
-	
+
 	public static String[] fun = new String[50];
 	public static int funptr = 0;
 
@@ -16,11 +16,11 @@ class FunTab {
 		for (int i = 0; i < funptr; i++)
 			if (s.equals(fun[i]))
 				return i;
-		
+
 		return -1; // should not happen unless you call
-				   // a function before it is defined
+					// a function before it is defined
 	}
-	
+
 	public static void output() {
 		System.out.println("\n Defined functions:\n");
 		for (int i = 0; i < funptr; i++) {
@@ -32,14 +32,15 @@ class FunTab {
 //==========================================
 
 class SymTab {
-	
+
 	static String[] id;
-	static int idptr;   // start from 1
+	static int idptr; // start from 1
 
 	public static void initialize() {
 		id = new String[50];
 		idptr = 1;
 	}
+
 	public static void add(String s) {
 		id[idptr] = s;
 		idptr++;
@@ -49,8 +50,8 @@ class SymTab {
 		for (int i = 1; i < idptr; i++)
 			if (s.equals(id[i]))
 				return i;
-		
-		return -1;    // this should not happen
+
+		return -1; // this should not happen
 	}
 }
 
@@ -65,7 +66,6 @@ public class ByteCode {
 	public static String[] code; // for execution
 	public static int[] arg;
 	public static int codeptr;
-	
 
 	public static String[] str_code; // for output
 	public static int str_codeptr;
@@ -74,7 +74,7 @@ public class ByteCode {
 		codeptr = 0;
 		code = new String[500];
 		arg = new int[500];
-		
+
 		str_codeptr = 0;
 		str_code = new String[500];
 	}
@@ -97,10 +97,9 @@ public class ByteCode {
 			return "";
 		}
 	}
-	
-	
+
 	// for arith opcodes, iload, and istore
-	
+
 	public static void gen(String opc, int n) {
 		if (n == -1) { // arith opcode has no operand: n = -1
 			code[codeptr] = opc;
@@ -128,7 +127,7 @@ public class ByteCode {
 			codeptr = str_codeptr;
 		}
 	}
-	
+
 	public static void gen_if(String rop) {
 		String instr = "";
 		if (rop == "==")
@@ -148,8 +147,7 @@ public class ByteCode {
 		code[codeptr] = instr;
 		str_code[str_codeptr] = instr + " ";
 	}
-	
-	
+
 	public static void gen_goto(int n) {
 		code[codeptr] = "goto";
 		str_code[str_codeptr] = "goto ";
@@ -159,13 +157,13 @@ public class ByteCode {
 		} else {
 			arg[codeptr] = n;
 			str_code[str_codeptr] = "goto " + n;
-		    codeptr++;
-		    str_codeptr++;
+			codeptr++;
+			str_codeptr++;
 		}
 	}
 
 	// to fix forward jumps
-	
+
 	public static void patch(int i, int dest) {
 		arg[i] = dest;
 		str_code[i] = str_code[i] + dest;
@@ -177,35 +175,32 @@ public class ByteCode {
 		return str_codeptr - n;
 	}
 
-	
-	public static void gen_invoke (int n)  {
+	public static void gen_invoke(int n) {
 		code[codeptr] = "invokevirtual";
 		arg[codeptr] = n;
 		str_code[str_codeptr] = "invokevirtual #" + n;
-	    codeptr++;
-	    str_codeptr++;
+		codeptr++;
+		str_codeptr++;
 	}
-	
-	
+
 	public static void gen_return() {
 		code[codeptr] = "ireturn";
 		str_code[str_codeptr] = "ireturn";
 		codeptr++;
 		str_codeptr++;
-	    return;
+		return;
 	}
-	
+
 	public static void gen_print() {
 		code[codeptr] = "iprint";
 		str_code[str_codeptr] = "iprint";
 		codeptr++;
 		str_codeptr++;
-	    return;
+		return;
 	}
-	
-	
+
 	// this method outputs all byte codes
-	
+
 	public static void output(String header) {
 		System.out.println("\n" + header + "\n" + "  Code:");
 		for (int i = 0; i < str_codeptr; i++)
@@ -213,6 +208,5 @@ public class ByteCode {
 				System.out.println("     " + i + ": " + str_code[i]);
 			}
 	}
-
 
 }

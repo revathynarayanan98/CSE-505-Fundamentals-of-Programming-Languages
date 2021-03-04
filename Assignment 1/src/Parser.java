@@ -36,7 +36,10 @@ class Function {
 		Lexer.lex();
 
 		fname = Lexer.ident;
-		FunTab.add(fname);
+		if (FunTab.index(fname) == -1)
+			FunTab.add(fname);
+		
+		Lexer.lex();
 		this.p = new Pars();
 		this.b = new Body();
 
@@ -60,13 +63,16 @@ class Pars {
 
 		while (Lexer.nextToken != Token.RIGHT_PAREN) {
 			this.id = Lexer.ident;
-			SymTab.add(this.id);
+
 			if (Lexer.nextToken == Token.KEY_INT) {
 				if (types.isEmpty())
 					this.types = this.id;
 				else
 					this.types += "," + this.id;
 				this.npars++;
+			} else if (Lexer.nextToken == Token.ID) {
+				if (SymTab.index(this.id) == -1)
+					SymTab.add(this.id);
 			}
 
 			Lexer.lex();
@@ -112,8 +118,11 @@ class Idlist {
 		// SymTab.add(id);
 
 		this.id = Lexer.ident;
-		SymTab.add(this.id);
 		Lexer.lex();
+		
+		if (SymTab.index(this.id) == -1)
+			SymTab.add(this.id);
+		
 		if (Lexer.nextToken == Token.COMMA) {
 			Lexer.lex();
 			this.il = new Idlist();
@@ -132,7 +141,8 @@ class Stmts {
 		if (Lexer.nextToken == Token.KEY_END)
 			return;
 		if (Lexer.nextToken == Token.ID || Lexer.nextToken == Token.LEFT_BRACE || Lexer.nextToken == Token.KEY_IF
-				|| Lexer.nextToken == Token.KEY_WHILE) {
+				|| Lexer.nextToken == Token.KEY_WHILE || Lexer.nextToken == Token.KEY_RETURN
+				|| Lexer.nextToken == Token.KEY_PRINT) {
 			ss = new Stmts();
 		}
 	}
@@ -145,26 +155,30 @@ class Stmt {
 	Cond c;
 	Loop l;
 	Cmpd cm;
+	Return ret;
+	Print print;
 
 	public Stmt() {
 		// Fill in code here
 		switch (Lexer.nextToken) {
-		case Token.ID: {
+		case Token.ID:
 			this.a = new Assign();
 			break;
-		}
-		case Token.KEY_IF: {
+		case Token.KEY_IF:
 			this.c = new Cond();
 			break;
-		}
-		case Token.KEY_WHILE: {
+		case Token.KEY_WHILE:
 			this.l = new Loop();
 			break;
-		}
-		case Token.LEFT_BRACE: {
+		case Token.LEFT_BRACE:
 			this.cm = new Cmpd();
 			break;
-		}
+		case Token.KEY_RETURN:
+			this.ret = new Return();
+			break;
+		case Token.KEY_PRINT:
+			this.print = new Print();
+			break;
 		default:
 			break;
 		}
@@ -185,7 +199,7 @@ class Assign extends Stmt {
 		super(0); // superclass initialization
 		// Fill in code here.
 
-		id = Lexer.ident;
+		this.id = Lexer.ident;
 
 		Lexer.lex();
 		Lexer.lex();
@@ -194,7 +208,7 @@ class Assign extends Stmt {
 		Lexer.lex();
 
 		// End with this statement:
-		ByteCode.gen("istore", SymTab.index(id));
+		ByteCode.gen("istore", SymTab.index(this.id));
 	}
 }
 
@@ -261,10 +275,13 @@ class Cmpd extends Stmt {
 
 	public Cmpd() {
 		super(0);
+
 		// Fill in code here
 		Lexer.lex();
 		s = new Stmts();
-		Lexer.lex(); // scan over the right brace
+
+		// Scan over the right brace
+		Lexer.lex();
 	}
 }
 
@@ -275,6 +292,11 @@ class Return extends Stmt {
 	public Return() {
 		super(0);
 		// Fill in code here. End with:
+
+		Lexer.lex();
+		ByteCode.gen("iload", SymTab.index(Lexer.ident));
+
+		// End with this statement:
 		ByteCode.gen_return();
 	}
 }
@@ -285,7 +307,12 @@ class Print extends Stmt {
 
 	public Print() {
 		super(0);
-		// Fill in code here. End with:
+		// Fill in code here.
+
+		Lexer.lex();
+		ByteCode.gen("iload", SymTab.index(Lexer.ident));
+
+		// End with:
 		ByteCode.gen_print();
 	}
 }
@@ -301,50 +328,44 @@ class Relexp {
 	public Relexp() {
 		// Fill in code here
 
-		e1 = new Expr();
+		this.e1 = new Expr();
 		switch (Lexer.nextToken) {
-		case Token.LESSER_OP: {
+		case Token.LESSER_OP:
 			Lexer.lex();
-			e2 = new Expr();
-			n1 = ByteCode.str_codeptr;
-			ByteCode.gen_if("if_icmpge");
+			this.e2 = new Expr();
+			this.n1 = ByteCode.str_codeptr;
+			ByteCode.gen_if("<");
 			break;
-		}
-		case Token.GREATER_OP: {
+		case Token.GREATER_OP:
 			Lexer.lex();
-			e2 = new Expr();
-			n1 = ByteCode.str_codeptr;
-			ByteCode.gen_if("if_icmple");
+			this.e2 = new Expr();
+			this.n1 = ByteCode.str_codeptr;
+			ByteCode.gen_if(">");
 			break;
-		}
-		case Token.LESSEQ_OP: {
+		case Token.LESSEQ_OP:
 			Lexer.lex();
-			e2 = new Expr();
-			n1 = ByteCode.str_codeptr;
-			ByteCode.gen_if("if_icmpgt");
+			this.e2 = new Expr();
+			this.n1 = ByteCode.str_codeptr;
+			ByteCode.gen_if("<=");
 			break;
-		}
-		case Token.GREATEREQ_OP: {
+		case Token.GREATEREQ_OP:
 			Lexer.lex();
-			e2 = new Expr();
-			n1 = ByteCode.str_codeptr;
-			ByteCode.gen_if("if_icmplt");
+			this.e2 = new Expr();
+			this.n1 = ByteCode.str_codeptr;
+			ByteCode.gen_if(">=");
 			break;
-		}
-		case Token.NOT_EQ: {
+		case Token.NOT_EQ:
 			Lexer.lex();
-			e2 = new Expr();
-			n1 = ByteCode.str_codeptr;
-			ByteCode.gen_if("if_icmpeq");
+			this.e2 = new Expr();
+			this.n1 = ByteCode.str_codeptr;
+			ByteCode.gen_if("!=");
 			break;
-		}
-		case Token.EQ_OP: {
+		case Token.EQ_OP:
 			Lexer.lex();
-			e2 = new Expr();
-			n1 = ByteCode.str_codeptr;
-			ByteCode.gen_if("if_icmpne ");
+			this.e2 = new Expr();
+			this.n1 = ByteCode.str_codeptr;
+			ByteCode.gen_if("==");
 			break;
-		}
 		}
 	}
 }
@@ -360,10 +381,10 @@ class Expr {
 
 		t = new Term();
 		if (Lexer.nextToken == Token.ADD_OP || Lexer.nextToken == Token.SUB_OP) {
-			op = Lexer.nextChar;
+			this.op = Lexer.nextChar;
 			Lexer.lex(); // scan over op
-			e = new Expr();
-			ByteCode.gen(op); // generate the byte-code for op
+			this.e = new Expr();
+			ByteCode.gen(this.op); // generate the byte-code for op
 		}
 	}
 }
@@ -379,10 +400,10 @@ class Term {
 
 		f = new Factor();
 		if (Lexer.nextToken == Token.MULT_OP || Lexer.nextToken == Token.DIV_OP) {
-			op = Lexer.nextChar;
+			this.op = Lexer.nextChar;
 			Lexer.lex(); // scan over op
-			t = new Term();
-			ByteCode.gen(op);
+			this.t = new Term();
+			ByteCode.gen(this.op);
 		}
 	}
 }
@@ -402,12 +423,12 @@ class Factor {
 			Lexer.lex(); // scan over int
 
 			if (this.i < 6 && this.i > -1)
-				ByteCode.gen("iconst", i);
+				ByteCode.gen("iconst", this.i);
 			else if (this.i < 128) {
-				ByteCode.gen("bipush", i);
+				ByteCode.gen("bipush", this.i);
 				ByteCode.skip(1);
 			} else {
-				ByteCode.gen("sipush ", i);
+				ByteCode.gen("sipush ", this.i);
 				ByteCode.skip(2);
 			}
 			break;
@@ -417,8 +438,9 @@ class Factor {
 			Lexer.lex(); // scan over ')'
 			break;
 		case Token.ID:
-			
-			this.i = SymTab.index(Lexer.ident);
+			// check left paren
+			this.id = Lexer.ident;
+			this.i = SymTab.index(this.id);
 			ByteCode.gen("iload", this.i);
 			Lexer.lex();
 			break;
@@ -437,9 +459,9 @@ class Funcall {
 		this.id = id;
 		Lexer.lex(); // (
 		ByteCode.gen("aload", 0);
-		el = new ExprList();
+		this.el = new ExprList();
 		Lexer.lex(); // skip over the )
-		int funid = FunTab.index(id);
+		int funid = FunTab.index(this.id);
 		ByteCode.gen_invoke(funid);
 		ByteCode.skip(2);
 	}
