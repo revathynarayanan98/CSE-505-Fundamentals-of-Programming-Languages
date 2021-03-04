@@ -39,7 +39,7 @@ class Function {
 		if (FunTab.index(fname) == -1)
 			FunTab.add(fname);
 		
-		Lexer.lex();
+		Lexer.lex(); // Skipping '('
 		this.p = new Pars();
 		this.b = new Body();
 
@@ -253,8 +253,9 @@ class Cond extends Stmt {
 				this.r = new Relexp();
 				ByteCode.skip(2);
 				n3 = Relexp.n1;
-				Lexer.lex();
+				Lexer.lex(); // Skip over ')'
 				s1 = new Stmt();
+				ByteCode.gen_goto(ByteCode.str_codeptr+n3+1);                   //made changes here
 				if (Lexer.nextToken == Token.KEY_ELSE) {
 					Lexer.lex();
 					n2 = ByteCode.str_codeptr;
@@ -266,6 +267,7 @@ class Cond extends Stmt {
 				} else
 					ByteCode.patch(n3, ByteCode.str_codeptr);
 			}
+			
 		}
 	}
 }
@@ -299,6 +301,7 @@ class Return extends Stmt {
 
 		// End with this statement:
 		ByteCode.gen_return();
+		
 	}
 }
 
@@ -315,6 +318,7 @@ class Print extends Stmt {
 
 		// End with:
 		ByteCode.gen_print();
+		
 	}
 }
 
@@ -342,6 +346,7 @@ class Relexp {
 			this.e2 = new Expr();
 			this.n1 = ByteCode.str_codeptr;
 			ByteCode.gen_if(">");
+			ByteCode.skip(3);                                          //made changes here
 			break;
 		case Token.LESSEQ_OP:
 			Lexer.lex();
@@ -429,7 +434,7 @@ class Factor {
 				ByteCode.gen("bipush", this.i);
 				ByteCode.skip(1);
 			} else {
-				ByteCode.gen("sipush ", this.i);
+				ByteCode.gen("sipush", this.i);
 				ByteCode.skip(2);
 			}
 			break;
