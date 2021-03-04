@@ -208,7 +208,8 @@ class Assign extends Stmt {
 		Lexer.lex();
 
 		// End with this statement:
-		ByteCode.gen("istore", SymTab.index(this.id));
+		if(Lexer.nextToken != Token.KEY_RETURN && Lexer.nextToken != Token.KEY_END)
+			ByteCode.gen("istore", SymTab.index(this.id));
 	}
 }
 
