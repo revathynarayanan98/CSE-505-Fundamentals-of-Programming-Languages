@@ -19,6 +19,10 @@ class Program {
 	}
 }
 
+class Global {
+	public static int npars;
+}
+
 // function -> int id '(' [ pars ] ')' '{' body '}'
 class Function {
 	String fname; // name of the function
@@ -76,6 +80,8 @@ class Pars {
 
 			Lexer.lex();
 		}
+
+		Global.npars = npars;
 
 	}
 }
@@ -259,16 +265,15 @@ class Cond extends Stmt {
 
 				s1 = new Stmt();
 
-				ByteCode.gen_goto(s1.ret.i + ByteCode.str_codeptr);
+				ByteCode.gen_goto(s1.ret == null ? 0 : s1.ret.i + ByteCode.str_codeptr);
 				ByteCode.skip(2);
 				ByteCode.patch(this.n3, ByteCode.str_codeptr);
 			}
 		}
 
-		// To - Do
-//		if (Lexer.nextToken == Token.KEY_ELSE) {
-//			System.out.println("Else: " + Lexer.ident);
-//			Lexer.lex();
+		if (Lexer.nextToken == Token.KEY_ELSE) {
+			System.out.println("Else: " + Lexer.ident);
+			Lexer.lex();
 //			this.n2 = ByteCode.str_codeptr;
 //			ByteCode.patch(this.n3, ByteCode.str_codeptr + this.n3);
 //			ByteCode.gen_goto(this.n3);
@@ -277,9 +282,8 @@ class Cond extends Stmt {
 //			this.s2 = new Stmt();
 //			ByteCode.gen_goto(this.n2);
 //			ByteCode.patch(this.n2, ByteCode.str_codeptr);
-//		} else {
-//			ByteCode.patch(this.n3, ByteCode.str_codeptr + this.n3);
-//		}
+			
+		}
 	}
 }
 
@@ -493,5 +497,12 @@ class ExprList {
 
 	public ExprList() {
 		// Fill in code here
+
+		for (int i = 0; i < Global.npars; i++) {
+			this.e = new Expr();
+			
+			if (i != Global.npars - 1)
+				Lexer.lex();
+		}
 	}
 }
