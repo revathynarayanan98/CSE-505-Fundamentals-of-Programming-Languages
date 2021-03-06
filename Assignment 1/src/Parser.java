@@ -82,7 +82,6 @@ class Pars {
 		}
 
 		Global.npars = npars;
-
 	}
 }
 
@@ -213,8 +212,9 @@ class Assign extends Stmt {
 		Lexer.lex();
 
 		// End with this statement
-		if (Lexer.nextToken != Token.KEY_RETURN && Lexer.nextToken != Token.KEY_END)
+		if (Lexer.nextToken != Token.KEY_END) {
 			ByteCode.gen("istore", SymTab.index(this.id));
+		}
 	}
 }
 
@@ -265,25 +265,22 @@ class Cond extends Stmt {
 
 				s1 = new Stmt();
 
-				ByteCode.gen_goto(s1.ret == null ? 0 : s1.ret.i + ByteCode.str_codeptr);
-				ByteCode.skip(2);
-				ByteCode.patch(this.n3, ByteCode.str_codeptr);
+				if (Lexer.nextToken == Token.KEY_ELSE) {
+					Lexer.lex();
+					this.n2 = ByteCode.str_codeptr;
+					ByteCode.gen_goto(-2);
+					ByteCode.skip(2);
+					ByteCode.patch(this.n3, ByteCode.str_codeptr);
+					this.s2 = new Stmt();
+					ByteCode.patch(this.n2, ByteCode.str_codeptr);
+				} else {
+					ByteCode.gen_goto((s1.ret == null ? 0 : s1.ret.i) + ByteCode.str_codeptr);
+					ByteCode.skip(2);
+					ByteCode.patch(this.n3, ByteCode.str_codeptr);
+				}
 			}
 		}
 
-		if (Lexer.nextToken == Token.KEY_ELSE) {
-			System.out.println("Else: " + Lexer.ident);
-			Lexer.lex();
-//			this.n2 = ByteCode.str_codeptr;
-//			ByteCode.patch(this.n3, ByteCode.str_codeptr + this.n3);
-//			ByteCode.gen_goto(this.n3);
-//			ByteCode.skip(2);
-//
-//			this.s2 = new Stmt();
-//			ByteCode.gen_goto(this.n2);
-//			ByteCode.patch(this.n2, ByteCode.str_codeptr);
-			
-		}
 	}
 }
 
@@ -310,16 +307,19 @@ class Return extends Stmt {
 
 	public Return() {
 		super(0);
-		// Fill in code here. End with:
+		// Fill in code here.
 
 		Lexer.lex();
 
-		this.i = ByteCode.str_codeptr;
-		ByteCode.gen("iload", SymTab.index(Lexer.ident));
+		if (FunTab.index(Lexer.ident) != -1) {
+			this.e = new Expr();
+		} else if (SymTab.index(Lexer.ident) != - 1){
+			this.i = ByteCode.str_codeptr;
+			ByteCode.gen("iload", SymTab.index(Lexer.ident));
+		}
 
 		// End with this statement:
 		ByteCode.gen_return();
-
 	}
 }
 
@@ -331,8 +331,8 @@ class Print extends Stmt {
 		super(0);
 		// Fill in code here.
 
+		this.e = new Expr();
 		Lexer.lex();
-		ByteCode.gen("iload", SymTab.index(Lexer.ident));
 
 		// End with:
 		ByteCode.gen_print();
@@ -464,8 +464,31 @@ class Factor {
 			// check left paren
 			this.id = Lexer.ident;
 			this.i = SymTab.index(this.id);
-			ByteCode.gen("iload", this.i);
+
+			if (FunTab.index(this.id) != -1) {
+				ByteCode.gen("aload", 0);
+				Lexer.lex(); // Skip '('
+
+				while (Lexer.nextToken != Token.RIGHT_PAREN) {
+					Lexer.lex();
+					if (Lexer.nextToken == Token.ID) {
+						String func_param = Lexer.ident;
+						if (SymTab.index(func_param) != -1) {
+							SymTab.add(func_param);
+							ByteCode.gen("iload", SymTab.index(func_param));
+						}
+					}
+				}
+
+				ByteCode.gen_invoke(FunTab.index(this.id));
+				ByteCode.skip(2);
+			}
+
+			if (this.i != -1)
+				ByteCode.gen("iload", this.i);
+
 			Lexer.lex();
+
 			break;
 		default:
 			break;
@@ -498,11 +521,19 @@ class ExprList {
 	public ExprList() {
 		// Fill in code here
 
+		
+//		while (Lexer.nextToken != Token.SEMICOLON) {
+//			System.out.println(Lexer.ident);
+//			this.e = new Expr();
+//			Lexer.lex();
+//		}
+		
 		for (int i = 0; i < Global.npars; i++) {
 			this.e = new Expr();
 			
-			if (i != Global.npars - 1)
-				Lexer.lex();
+			Lexer.lex();
+//			if (i != Global.npars - 1)
+//				Lexer.lex();
 		}
 	}
 }

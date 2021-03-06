@@ -18,7 +18,7 @@ class FunTab {
 				return i;
 
 		return -1; // should not happen unless you call
-					// a function before it is defined
+				   // a function before it is defined
 	}
 
 	public static void output() {
