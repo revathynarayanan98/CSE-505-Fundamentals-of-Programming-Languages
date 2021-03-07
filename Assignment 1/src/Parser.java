@@ -1,8 +1,13 @@
+import java.util.HashMap;
+
 // This file requires several changes
 
 // program -> { function } end
 class Program {
+	public static HashMap<String, Integer> npars_map;
+
 	public Program() {
+		npars_map = new HashMap<>();
 
 		while (Lexer.nextToken == Token.KEY_INT) {
 
@@ -10,6 +15,8 @@ class Program {
 			ByteCode.initialize(); // initialize for every function parsed
 
 			Function f = new Function();
+
+			npars_map.put(f.fname, f.p.npars);
 
 			ByteCode.output(f.header);
 
@@ -20,7 +27,6 @@ class Program {
 }
 
 class Global {
-	public static int npars;
 }
 
 // function -> int id '(' [ pars ] ')' '{' body '}'
@@ -47,6 +53,21 @@ class Function {
 		this.b = new Body();
 
 		this.header = "int " + fname + "(" + p.types + ");";
+
+		Lexer.lex();
+		if (Lexer.ident == "int") {
+			Lexer.lex();
+
+			fname = Lexer.ident;
+			FunTab.add(fname);
+
+			Lexer.lex(); // Skipping '('
+			this.p = new Pars();
+			this.b = new Body();
+
+			this.header = "int " + fname + "(" + p.types + ");";
+		}
+
 		return;
 	}
 }
@@ -80,8 +101,6 @@ class Pars {
 
 			Lexer.lex();
 		}
-
-		Global.npars = npars;
 	}
 }
 
@@ -311,15 +330,25 @@ class Return extends Stmt {
 
 		Lexer.lex();
 
-		if (FunTab.index(Lexer.ident) != -1) {
+		if(Lexer.nextToken == Token.ID || Lexer.nextToken == Token.INT_LIT) {			
 			this.e = new Expr();
-		} else if (SymTab.index(Lexer.ident) != - 1){
-			this.i = ByteCode.str_codeptr;
-			ByteCode.gen("iload", SymTab.index(Lexer.ident));
+			Lexer.lex();
 		}
 
-		// End with this statement:
 		ByteCode.gen_return();
+
+//		if(Lexer.nextToken == Token.ID) {
+//		if (FunTab.index(Lexer.ident) != -1) {
+//			this.e = new Expr();
+//		} else if (SymTab.index(Lexer.ident) != - 1){
+//			this.i = ByteCode.str_codeptr;
+//			ByteCode.gen("iload", SymTab.index(Lexer.ident));
+//		}
+//		
+//	}
+
+		// End with this statement:
+//		ByteCode.gen_return();
 	}
 }
 
@@ -437,7 +466,8 @@ class Factor {
 	String id;
 	Funcall fc;
 	Expr e;
-
+	Factor f;
+	
 	public Factor() {
 		// Fill in code here
 		switch (Lexer.nextToken) {
@@ -478,6 +508,12 @@ class Factor {
 							ByteCode.gen("iload", SymTab.index(func_param));
 						}
 					}
+					else if(Lexer.nextToken == Token.ADD_OP) {
+						this.e = new Expr();
+					}
+					else if(Lexer.nextToken == Token.INT_LIT) {
+						f = new Factor();
+					}
 				}
 
 				ByteCode.gen_invoke(FunTab.index(this.id));
@@ -493,6 +529,7 @@ class Factor {
 		default:
 			break;
 		}
+
 	}
 }
 
@@ -521,19 +558,18 @@ class ExprList {
 	public ExprList() {
 		// Fill in code here
 
-		
-//		while (Lexer.nextToken != Token.SEMICOLON) {
-//			System.out.println(Lexer.ident);
-//			this.e = new Expr();
-//			Lexer.lex();
-//		}
-		
-		for (int i = 0; i < Global.npars; i++) {
-			this.e = new Expr();
-			
-			Lexer.lex();
-//			if (i != Global.npars - 1)
-//				Lexer.lex();
+		String key = Lexer.ident;
+
+		if (Program.npars_map.containsKey(key)) {
+			int size = Program.npars_map.get(key);
+			for (int i = 0; i < size; i++) {
+				this.e = new Expr();
+				if (i != size - 1)
+					Lexer.lex();
+			}
+		}
+		else {
+			System.err.println("Key not found: " + key);
 		}
 	}
 }
