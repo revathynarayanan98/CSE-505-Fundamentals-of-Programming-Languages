@@ -293,8 +293,8 @@ class Cond extends Stmt {
 					this.s2 = new Stmt();
 					ByteCode.patch(this.n2, ByteCode.str_codeptr);
 				} else {
-					ByteCode.gen_goto((s1.ret == null ? 0 : s1.ret.i) + ByteCode.str_codeptr);
-					ByteCode.skip(2);
+//					ByteCode.gen_goto((s1.ret == null ? 0 : s1.ret.i) + ByteCode.str_codeptr);
+//					ByteCode.skip(2);
 					ByteCode.patch(this.n3, ByteCode.str_codeptr);
 				}
 			}
@@ -330,25 +330,12 @@ class Return extends Stmt {
 
 		Lexer.lex();
 
-		if(Lexer.nextToken == Token.ID || Lexer.nextToken == Token.INT_LIT) {			
+		if (Lexer.nextToken == Token.ID || Lexer.nextToken == Token.INT_LIT) {
 			this.e = new Expr();
 			Lexer.lex();
 		}
 
 		ByteCode.gen_return();
-
-//		if(Lexer.nextToken == Token.ID) {
-//		if (FunTab.index(Lexer.ident) != -1) {
-//			this.e = new Expr();
-//		} else if (SymTab.index(Lexer.ident) != - 1){
-//			this.i = ByteCode.str_codeptr;
-//			ByteCode.gen("iload", SymTab.index(Lexer.ident));
-//		}
-//		
-//	}
-
-		// End with this statement:
-//		ByteCode.gen_return();
 	}
 }
 
@@ -360,8 +347,12 @@ class Print extends Stmt {
 		super(0);
 		// Fill in code here.
 
-		this.e = new Expr();
 		Lexer.lex();
+		
+		if (Lexer.nextToken == Token.ID) {
+			this.e = new Expr();
+			Lexer.lex();
+		}
 
 		// End with:
 		ByteCode.gen_print();
@@ -467,7 +458,7 @@ class Factor {
 	Funcall fc;
 	Expr e;
 	Factor f;
-	
+
 	public Factor() {
 		// Fill in code here
 		switch (Lexer.nextToken) {
@@ -479,7 +470,7 @@ class Factor {
 				ByteCode.gen("iconst", this.i);
 			else if (this.i < 128) {
 				ByteCode.gen("bipush", this.i);
-				ByteCode.skip(1);
+				// ByteCode.skip(1);
 			} else {
 				ByteCode.gen("sipush", this.i);
 				ByteCode.skip(2);
@@ -507,11 +498,9 @@ class Factor {
 							SymTab.add(func_param);
 							ByteCode.gen("iload", SymTab.index(func_param));
 						}
-					}
-					else if(Lexer.nextToken == Token.ADD_OP) {
+					} else if (Lexer.nextToken == Token.ADD_OP) {
 						this.e = new Expr();
-					}
-					else if(Lexer.nextToken == Token.INT_LIT) {
+					} else if (Lexer.nextToken == Token.INT_LIT) {
 						f = new Factor();
 					}
 				}
@@ -567,8 +556,7 @@ class ExprList {
 				if (i != size - 1)
 					Lexer.lex();
 			}
-		}
-		else {
+		} else {
 			System.err.println("Key not found: " + key);
 		}
 	}
