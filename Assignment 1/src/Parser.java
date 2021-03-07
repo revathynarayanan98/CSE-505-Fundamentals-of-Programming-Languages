@@ -293,8 +293,6 @@ class Cond extends Stmt {
 					this.s2 = new Stmt();
 					ByteCode.patch(this.n2, ByteCode.str_codeptr);
 				} else {
-//					ByteCode.gen_goto((s1.ret == null ? 0 : s1.ret.i) + ByteCode.str_codeptr);
-//					ByteCode.skip(2);
 					ByteCode.patch(this.n3, ByteCode.str_codeptr);
 				}
 			}
@@ -470,7 +468,6 @@ class Factor {
 				ByteCode.gen("iconst", this.i);
 			else if (this.i < 128) {
 				ByteCode.gen("bipush", this.i);
-				// ByteCode.skip(1);
 			} else {
 				ByteCode.gen("sipush", this.i);
 				ByteCode.skip(2);
