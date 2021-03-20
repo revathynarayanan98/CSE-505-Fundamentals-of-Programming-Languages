@@ -479,7 +479,7 @@ class Factor {
 			Lexer.lex(); // scan over ')'
 			break;
 		case Token.ID:
-			// check left paren
+			// check left parenthesis
 			this.id = Lexer.ident;
 			this.i = SymTab.index(this.id);
 
