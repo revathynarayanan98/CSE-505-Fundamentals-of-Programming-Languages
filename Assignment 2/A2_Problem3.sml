@@ -1,5 +1,8 @@
 (* Problem 3(a) *)
 
+fun f(1) = 1
+    | f(n) = n * n + f(n-1);
+
 fun f2(n) =
 let
     fun f2_helper(n, p) = 
