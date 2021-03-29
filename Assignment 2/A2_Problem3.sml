@@ -33,9 +33,9 @@ fun cat(leaf(s)) = s
 | cat(node(t1, t2)) = cat(t1) ^ " " ^ cat(t2);
 
 fun cat2(tr) =
-let 
-    fun cat2_helper(leaf(s) :: t, a) = a ^ " " ^ s
-    | cat2_helper(node(leaf(s), t2) :: t, a) = cat2_helper(t2 :: t, a ^ s)
+let fun cat2_helper([], a) = a
+    | cat2_helper(leaf(s) :: t, a) = cat2_helper(t, a ^ " " ^ s)
+    | cat2_helper(node(leaf(s), t2) :: t, a) = cat2_helper(t2 :: t, a ^ " " ^ s)
     | cat2_helper(node(t1, t2) :: t, a) = cat2_helper([t1, t2], a)
 in
     cat2_helper([tr], "")
