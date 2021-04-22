@@ -1,0 +1,97 @@
+TRANSCRIPT OF A SESSION USING PROLOG
+
+?- protocol(transcript_file_name).
+
+?- analyze.
+
+Tiny OOPL Analyzer. Sample Commands:
+
+   subclass(c, a).
+   recursive(a).
+   over_ridden(c, M).
+   inherits(c, L).
+   cycle(a).
+
+   why(subclass(c, a)).
+   why(recursive(a)).
+   why(over_ridden(c, a:f:([int, d]->int))).
+   why(inherits(c, L)).
+   why(cycle(a)).
+
+?-  subclass(c, a).
+
+true
+
+?- why(subclass(c, a)).
+
+subclass(c,a)
+      <-- db_class(b,a)
+      <-- subclass(c,b)
+            <-- db_class(c,b)
+
+?- recursive(a).
+
+true
+
+?- why(recursive(a)).
+
+recursive(a)
+      <-- subclass(d,a)
+            <-- db_class(b,a)
+            <-- subclass(d,b)
+                  <-- db_class(d,b)
+      <-- db_field(d,z1:a)
+
+
+?- over_ridden(c, M).
+
+M = a:f:([int, d]->int) ;
+M = a:m2:([d]->void) ;
+false
+
+?- why(over_ridden(c, a:f:([int, d]->int))).
+
+over_ridden(c,a:f:([int,d]->int))
+      <-- subclass(b,a)
+            <-- db_class(b,a)
+      <-- subclass(c,b)
+            <-- db_class(c,b)
+      <-- db_method(a,f,([int,d]->int))
+      <-- db_method(b,f,([int,d]->int))
+
+% ******** explains only how the first answer was found **************
+
+?- cycle(a).
+
+true
+
+?- why(cycle(a)).
+
+cycle(a)
+      <-- db_method(a,f,([int,d]->int))
+      <-- member(d,[int,d])
+      <-- \+basic(d)
+      <-- cycle(d,a,[d])
+            <-- db_method(d,m1,([e,b]->boolean))
+            <-- member(b,[e,b])
+            <-- \+basic(b)
+            <-- \+member(b,[d])
+            <-- cycle(b,a,[b,d])
+                  <-- db_method(b,m3,([a]->void))
+                  <-- member(a,[a])
+
+
+?- inherits(c,L).
+
+a:m3:([c]->real)
+b:f:([int,d]->int)
+b:m3:([a]->void)
+L = [a:m3:([c]->real), b:f:([int, d]->int), b:m3:([a]->void)].
+
+?- why(inherits(c,L)).
+
+% ... the explanation is hard to follow without the code and is omitted ... 
+
+?- noprotocol.
+
+

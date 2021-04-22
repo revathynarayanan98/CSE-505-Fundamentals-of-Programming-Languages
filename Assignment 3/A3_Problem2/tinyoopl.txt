@@ -1,0 +1,38 @@
+class a {
+  int x1, y1;
+  b z1;
+  int f(int x1, d y1);
+  void m2(d w1);
+  real m3(c z1);
+}
+
+class b extends a {
+  double w1;
+  int x1, x2;
+  c x3;
+  int f(int q1, d r1);
+  void m3(a z1);
+}
+
+class c extends b {
+  d z1, z2;
+  int f2(c q1, d r1);
+  void m2(d w2);
+}
+
+class d extends b {
+  c y1;
+  a z1;
+  void h(int w1);
+  boolean m1(e x1, b x2);
+}
+
+class e extends b {
+  c y1;
+  a z1;
+  void h(int w1);
+  boolean m1(int x1, real x2);
+}
+ 
+#
+
