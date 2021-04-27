@@ -1,6 +1,9 @@
 # Ignore desktop.ini files
 *.ini
 
+# Ignore vscode files
+.vscode
+
 # Compiled class file
 *.class
 
