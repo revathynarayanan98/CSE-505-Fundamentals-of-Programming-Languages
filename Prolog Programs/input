@@ -1,0 +1,166 @@
+<tree>  
+   <instance> 1 </instance>
+   <attributes>
+   	<this>  tree1  </this>
+   	<super> object1 </super>
+	<value> treeelem1 </value>
+	<left>  tree2 </left>
+	<right> tree3 </right>
+   </attributes>
+   <methods>  
+	<mname> insert </mname>
+	<mname> min    </mname>
+	<mname> max    </mname>
+   </methods>
+</tree>
+
+<tree>  
+   <instance> 2 </instance>
+   <attributes>
+   	<this>  tree2  </this>
+   	<super> object2 </super>
+	<value> treeelem2  </value>
+	<left>  nil </left>
+	<right> nil </right>
+   </attributes>
+   <methods>  
+	<mname> insert </mname>
+	<mname> min    </mname>
+	<mname> max    </mname>
+   </methods>
+</tree>
+
+<tree>  
+   <instance> 3 </instance>
+   <attributes>
+   	<this>  tree3  </this>
+   	<super> object3 </super>
+	<value> treeelem3  </value>
+	<left>  nil </left>
+	<right> nil </right>
+   </attributes>
+   <methods>  
+	<mname> insert </mname>
+	<mname> min    </mname>
+	<mname> max    </mname>
+   </methods>
+</tree>
+
+
+<treeelem>
+   <instance> 1 </instance>
+   <attributes>
+   	<this>  treeelem1  </this>
+   	<super> object4    </super>
+        <val> 100 </val>
+   </attributes>
+   <methods>
+        <mname> equals </mname>
+        <mname> lessthan </mname>
+   </methods>
+</treeelem>
+
+<treeelem>
+   <instance> 2 </instance>
+   <attributes>
+   	<this>  treeelem2  </this>
+   	<super> object5    </super>
+        <val> 50 </val>
+   </attributes>
+   <methods>
+        <mname> equals </mname>
+        <mname> lessthan </mname>
+   </methods>
+</treeelem>
+
+<treeelem>
+   <instance> 3 </instance>
+   <attributes>
+   	<this>  treeelem3  </this>
+   	<super> object6    </super>
+        <val> 150 </val>
+   </attributes>
+   <methods>
+        <mname> equals </mname>
+        <mname> lessthan </mname>
+   </methods>
+</treeelem>
+
+<object>
+   <instance> 1 </instance>
+   <attributes> 
+   	<this> object1 </this>
+        <super> nil  </super>
+   </attributes> 
+   <methods>
+	<mname> clone </mname>
+	<mname> toString </mname>
+	<mname> equals </mname>
+   </methods>
+</object>
+
+<object>
+   <instance> 2 </instance>
+   <attributes> 
+	<this> object2 </this>
+	<super> nil  </super>
+   </attributes> 
+   <methods>
+	<mname> clone </mname>
+	<mname> toString </mname>
+	<mname> equals </mname>
+   </methods>
+</object>
+
+<object>
+   <instance> 3 </instance>
+   <attributes> 
+	<this> object3 </this>
+	<super> nil  </super>
+   </attributes> 
+   <methods>
+	<mname> clone </mname>
+	<mname> toString </mname>
+	<mname> equals </mname>
+   </methods>
+</object>
+
+<object>
+   <instance> 4 </instance>
+   <attributes> 
+	<this> object4 </this>
+	<super> nil  </super>
+   </attributes> 
+   <methods>
+	<mname> clone </mname>
+	<mname> toString </mname>
+	<mname> equals </mname>
+   </methods>
+</object>
+
+<object>
+   <instance> 5 </instance>
+   <attributes> 
+	<this> object5 </this>
+	<super> nil  </super>
+   </attributes> 
+   <methods>
+	<mname> clone </mname>
+	<mname> toString </mname>
+	<mname> equals </mname>
+   </methods>
+</object>
+
+<object>
+   <instance> 6 </instance>
+   <attributes> 
+	<this> object6 </this>
+	<super> nil  </super>
+   </attributes> 
+   <methods>
+	<mname> clone </mname>
+	<mname> toString </mname>
+	<mname> equals </mname>
+   </methods>
+</object>
+$
